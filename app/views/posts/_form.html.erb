@@ -1,0 +1,57 @@
+<%= form_for @post, html: { multipart: true, id: "post-upload-form" } do |f| %>
+  <div class="form-group">
+    <%= f.label :description %>
+    <%= f.text_field :description, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <label>Upload Image</label>
+    <div id="my-dropzone" class="dropzone"></div>
+
+    <noscript>
+      <%= f.file_field :image, class: "form-control" %>
+    </noscript>
+  </div>
+
+  <%= f.hidden_field :user_id, value: current_user.id %>
+
+  <div class="text-center mt-3">
+    <%= f.submit "Create Post", class: "btn btn-success" %>
+    <button type="button" onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+  </div>
+<% end %>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    Dropzone.autoDiscover = false;
+
+    $(document).on('click', '.open-post-modal', function(e) {
+      e.preventDefault();
+      const url = $(this).data('url');
+
+      $('#modalOverlay').fadeIn();
+      $('#dynamicModalForm').load(url, function() {
+        $(this).fadeIn();
+
+        // Now initialize Dropzone on the dynamically loaded form
+        if (Dropzone.instances.length > 0) Dropzone.instances.forEach(dz => dz.destroy());
+
+        new Dropzone("#post-upload-form", {
+          paramName: "post[image]",
+          maxFiles: 1,
+          acceptedFiles: "image/*",
+          addRemoveLinks: true,
+          dictDefaultMessage: "Drag an image or click to upload"
+        });
+      });
+    });
+
+    // Optional: click outside to close modal
+    $('#modalOverlay').on('click', closeModal);
+  });
+
+  function closeModal() {
+    $('#dynamicModalForm').fadeOut();
+    $('#modalOverlay').fadeOut();
+  }
+</script>

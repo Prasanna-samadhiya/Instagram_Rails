@@ -1,0 +1,75 @@
+<div class="container mb-5 user-edit-page " style="display:flex;justify-content:center;margin-left:20px">
+  <div class="row flex ">
+    <div class="col-md-10 bg-white p-4 rounded shadow-sm">
+
+      <div class="row">
+        <!-- Right side: Avatar + Dropzone -->
+        <div class="col-md-4 d-flex flex-column align-items-center justify-content-center  mt-4 mt-md-0" style="gap:140px">
+          <% if current_user.avatar.attached? %>
+            <%= image_tag current_user.avatar, class: "rounded-circle mb-3", size: "150x150" %>
+          <% else %>
+            <%= image_tag "default-avatar.png", class: "rounded-circle mb-3", size: "120x120" %>
+          <% end %>
+
+          <div class="w-100 text-center">
+            <label class="form-label">Change Profile Photo</label>
+            <div id="avatar-dropzone" class="dropzone rounded border" style="min-height: 150px;"></div>
+
+           
+            <%= hidden_field_tag 'user[avatar]', nil, id: "avatar-signed-id" %>
+          </div>
+        </div>
+        
+        <!-- Left side: Form fields -->
+        <div class="col-md-8 border-start">
+          <h4 class="mb-4 text-center">Edit Profile</h4>
+
+          <%= form_with model: current_user, local: true, html: { class: "form-edit-user" } do |f| %>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <%= f.label :name, class: "form-label" %>
+                <%= f.text_field :name, class: "form-control" %>
+              </div>
+              <div class="col-md-6">
+                <%= f.label :username, class: "form-label" %>
+                <%= f.text_field :username, class: "form-control" %>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <%= f.label :email, class: "form-label" %>
+                <%= f.text_field :email, class: "form-control" %>
+              </div>
+              <div class="col-md-6">
+                <%= f.label :phone, class: "form-label" %>
+                <%= f.text_field :phone, class: "form-control" %>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <%= f.label :website, class: "form-label" %>
+                <%= f.text_field :website, class: "form-control" %>
+              </div>
+              <div class="col-md-6">
+                <%= f.label :gender, class: "form-label" %>
+                <%= f.select :gender, ['Male', 'Female', 'Other'], { prompt: "Select gender" }, class: "form-select" %>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <%= f.label :bio, class: "form-label" %>
+              <%= f.text_area :bio, rows: 3, class: "form-control" %>
+            </div>
+
+            <div class="text-start mt-4">
+              <%= f.submit "Update Profile", class: "btn btn-primary px-4" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

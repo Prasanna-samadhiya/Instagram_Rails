@@ -1,0 +1,67 @@
+<div class="user-profile" style="padding: 40px 20px;">
+  <div class="profile row" style="max-width: 960px; margin: 0 auto; background: rgba(255,255,255,0.92); border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); padding: 30px;">
+
+    <div class="col-md-4 avatar text-center">
+      <div class="wrapper">
+        <% if @user.avatar.attached? %>
+          <%= image_tag @user.avatar, class: "rounded-circle", style: "width: 150px; height: 150px; object-fit: cover;" %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-md-8 basic-info">
+      <div class="user-wrapper d-flex align-items-center gap-3 mb-2">
+        <h2 class="username" style="font-size: 2rem; font-weight: bold;"><%= @user.username %></h2>
+
+        <% if @user.id == current_user.id %>
+          <a href="<%= edit_user_path(current_user) %>">
+            <button style="padding: 6px 14px; background-color: #6228d7; color: white; border: none; border-radius: 6px;">Edit Profile</button>
+          </a>
+        <% end %>
+
+        <% if current_user != @user %>
+          <% if current_user.following?(@user) %>
+            <%= button_to "Unfollow", unfollow_user_path(@user), method: :post, class: "btn btn-outline-danger btn-sm" %>
+          <% else %>
+            <%= button_to "Follow", follow_user_path(@user), method: :post, class: "btn btn-outline-primary btn-sm" %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <ul class="posts d-flex gap-4 list-unstyled mb-3">
+        <li><strong><%= @posts.count %></strong> <%= link_to "posts", root_path, style: "text-decoration: none; color: #333;" %></li>
+        <li><strong><%= @user.followers.count %></strong> <%= link_to "followers", user_follows_path(@user), style: "text-decoration: none; color: #333;" %></li>
+        <li><strong><%= @user.followees.count %></strong> <%= link_to "following", user_follows_path(@user), style: "text-decoration: none; color: #333;" %></li>
+      </ul>
+
+      <h4 class="name" style="margin-bottom: 4px;"><%= @user.name %></h4>
+      <a class="website" href="<%= @user.website %>" target="_blank" style="color: #007bff;"><%= @user.website %></a>
+    </div>
+
+    <div class="user-tabs mt-4 d-flex justify-content-around border-top pt-3">
+      <a class="tab text-dark text-decoration-none" href="#">
+        <i class="fa fa-th"></i> POSTS
+      </a>
+      <a class="tab text-dark text-decoration-none" href="#">
+        <i class="fa fa-tv"></i> IGTV
+      </a>
+      <a class="tab text-dark text-decoration-none" href="#">
+        <i class="fa fa-bookmark"></i> SAVED
+      </a>
+      <a class="tab text-dark text-decoration-none" href="#">
+        <i class="fa fa-tag"></i> TAGGED
+      </a>
+    </div>
+
+    <div class="user-images mt-4 d-flex flex-wrap gap-3">
+      <% @posts.each do |post| %>
+        <div class="wrapper" style="width: 30%; overflow: hidden; border-radius: 8px;height:170px">
+          <%= link_to post_path(post) do %>
+            <%= image_tag post.image, style: "width: 100%; height: auto;" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+  </div>
+</div>

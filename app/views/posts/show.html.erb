@@ -1,0 +1,33 @@
+<div style="height:80vh;display:flex;justify-content:center">
+  <div class="post-show row" style="width:100vh;height:50vh;background-color:white">
+    <div class="col-md-8">
+      <%=image_tag @post.image, class: 'image' ,style:"height:100%"%>
+    </div>
+    <div class="col-md-4">
+      <div class="user">
+        <div class="avatar">
+          <% if @post.user.avatar.attached? %>
+            <%= link_to user_path(@post.user) do %>
+              <%= image_tag @post.user.avatar %>
+            <% end %>
+          <% end %>
+        </div>
+        <%= link_to @post.user.username, user_path(@post.user), class: 'username' %>
+      </div>
+      <div class="description">
+        <% @post.description.to_s.split(' ').each do |word| %>
+                <% if word.start_with?('#') %>
+                  <%= link_to word, search_path(query: word) %>
+                <%else %>
+                  <%= word %>
+                <%end %>
+        <% end %>
+      </div>
+      <div class="delete" style="display:flex;height:60%;justify-content:flex-end;align-items:flex-end">
+          <% if current_user.posts.exists?(@post.id) %>
+            <%= button_to 'Remove', post_path(@post),class:"btn btn-primary", method: :delete, data: { confirm: 'Are you sure?' } %>
+          <% end %>
+      </div>
+    </div>
+  </div>
+</div>

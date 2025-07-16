@@ -1,0 +1,46 @@
+<% indent = [depth, 3].min %>
+<% box_class = depth.zero? ? "card mb-3" : "mb-2 border-start ps-3" %>
+
+<div class="<%= box_class %> ms-<%= indent * 2 %>">
+  <div class="card-body" style="<%= depth.zero? ? '' : 'padding: 0.5rem 0;' %>">
+
+    <div class="d-flex align-items-center mb-2">
+      <%= image_tag(comment.user.avatar.attached? ? url_for(comment.user.avatar) : 'default-avatar.png', class: "rounded-circle me-2", size: "40x40") %>
+      <div>
+        <strong><%= comment.user.name %></strong><br>
+        <small class="text-muted"><%= time_ago_in_words(comment.created_at) %> ago</small>
+      </div>
+    </div>
+
+    <p class="mb-2"><%= comment.content %></p>
+
+    <div class="d-flex gap-2 mb-2">
+      <button class="btn btn-sm btn-outline-secondary btn-sm py-0 px-2" data-bs-toggle="collapse" data-bs-target="#reply-form-<%= comment.id %>">
+        Reply
+      </button>
+
+      <% if comment.replies.any? %>
+        <button class="btn btn-sm btn-outline-primary btn-sm py-0 px-2" data-bs-toggle="collapse" data-bs-target="#replies-<%= comment.id %>">
+          View Replies (<%= comment.replies.count %>)
+        </button>
+      <% end %>
+    </div>
+
+    <div class="collapse" id="reply-form-<%= comment.id %>">
+      <%= form_with url: create_comment_path(comment.post), method: :post, local: true do |f| %>
+        <%= hidden_field_tag :parent_id, comment.id %>
+        <div class="input-group mb-2">
+          <%= f.text_field :content, placeholder: "Write a reply...", class: "form-control form-control-sm" %>
+          <%= f.submit "Reply", class: "btn btn-success btn-sm" %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="collapse" id="replies-<%= comment.id %>">
+      <% comment.replies.each do |reply| %>
+        <%= render partial: 'comment', locals: { comment: reply, depth: depth + 1 } %>
+      <% end %>
+    </div>
+
+  </div>
+</div>

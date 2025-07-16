@@ -1,0 +1,153 @@
+
+
+
+<% if user_signed_in? %>
+  <div style= "display:flex;flex-direction:row;justify-content:space-between; ">
+    <div style = "height:550px;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width: none;gap:20px;margin-bottom:50px;margin-left:100px ">
+      <% @posts.each do |post| %>
+        <div style="width:340px">
+          <div class="insta__container insta__post">
+          <!-- Insta-post start -->
+          <section class="insta__header insta__post_header">
+              <div class="insta__icon-wrap insta__post_icon-wrap">
+                <% if post.user.avatar.attached? %>
+                  <%= link_to user_path(post.user) do %>
+                    <%= image_tag post.user.avatar ,class: "insta__mini_icon insta__post_icon" %>
+                  <% end %>  
+                <% end %>
+              </div>
+              
+              <span class="insta__post_text-bold">
+                  <%= link_to post.user.name, user_path(post.user), style: 'text-decoration:none;color:black;' %>
+              </span>
+
+              <!-- follow/unfollow button -->
+              <div style="margin-left:100px;">  
+                <% if current_user != post.user %>
+                  <% if current_user.following?(post.user) %>
+                    <%= button_to "Unfollow", unfollow_user_path(post.user), method: :post,class: "btn btn-outline-danger btn-sm" %>
+                  <% else %>
+                    <%= button_to "Follow", follow_user_path(post.user), method: :post,class: "btn btn-outline-primary btn-sm" %>
+                  <% end %>
+                <% end %>
+              </div>
+          </section>
+
+          <!-- Post Image -->
+          <section class="insta__post_photos">
+              <% if post.image&.attached? %>
+              <%= image_tag url_for(post.image), class: "insta__post_photo", alt: "post image" %>
+              <% else %>
+              <img src="https://www.bing.com/th/id/OIP.tZq4FbHI-2VuBSGkHjfyfAHaHa?w=157&h=211&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2" class="insta__post_photo" alt="placeholder">
+              <% end %>
+          </section>
+
+          <!-- Post Buttons -->
+          <section class="insta__post_btns">
+              <div class="insta__post_btns-left">
+              <div class="d-flex justify-content-between align-items-center px-3 py-2 gap-4" style="font-size: 1.4rem;">
+                <% if current_user.likes.exists?(post_id: post.id) %>
+                  <%= button_to dislike_posts_path(post), method: :post,style:"", class: "btn p-0 border-0 bg-transparent text-danger  " do %>
+                    <i class="fas fa-heart fa-2x"></i> 
+                  <% end %>
+                <% else %>
+                  <%= button_to like_posts_path(post), method: :post, class: "btn p-0 border-0 bg-transparent" do %>
+                    <i class="far fa-heart fa-2x"></i> 
+                  <% end %>
+                <% end %>
+                <%= button_to like_posts_path(post), method: :post, class: "btn p-0 border-0 bg-transparent" do %>
+                    <i class="far fa-paper-plane fa-2x"></i>
+                <% end %>
+                <button class="btn p-0 border-0 bg-transparent toggle-comments-btn" data-bs-toggle="collapse" data-bs-target="#comments-<%= post.id %>">
+                  <i class="far fa-comment fa-2x"></i>
+                </button>
+              </div>
+          </section>
+
+          <!-- Post Comments -->
+          <section class="insta__post_comm insta__post_comm_aut">
+              <span class="insta__post_text-bold"><%= post.likes.count %> liked and <%= post.comments.select { |c| c.parent_id.nil? }.count%> commented on this post</span>
+              <div class="insta__post_comm_author">
+              <span class="insta__post_text-bold"><%= post.user.name %></span>
+              <% post.description.to_s.split(' ').each do |word| %>
+                <% if word.start_with?('#') %>
+                  <%= link_to word, search_path(query: word) %>
+                <% else %>
+                  <%= word %>
+                <% end %>
+              <% end %>
+              </div>
+          </section>
+
+          <!-- Comment Field -->
+          
+          <div class="collapse mt-2 " id="comments-<%= post.id %>">
+            <%= form_with url: create_comment_path(post),method: :post, local: true do |f| %>
+              <div class="input-group mt-3 mb-3">
+                <%= f.text_field :content, placeholder: "Add a new comment...", class: "form-control" %>
+                <%= f.submit nil, class: "btn btn-primary" do %>
+                  Comment
+                <% end %>
+              </div>
+            <% end %>
+            <% post.comments.where(parent_id: nil).each do |comment| %>
+              <%= render partial: 'comment', locals: { comment: comment, depth: 0 } %>
+            <% end %>
+          </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="row " style="height: 72vh; margin-right:10px; width:1000px; padding-bottom:20px;background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      
+      <div class="col-md-4 border-end px-0" style="background-color: #fafafa;">
+        <div class="p-3 border-bottom">
+          <h5 class="fw-bold mb-0" style="color:black">Chats</h5>
+        </div>
+        <div class="list-group list-group-flush" style="height: calc(100% - 56px); overflow-y: auto;">
+          <% @users.each do |user| %>
+            <a href="#" class="list-group-item list-group-item-action d-flex align-items-center gap-3 px-3 py-2 chat-user" data-user-id="<%= user.id %>">
+              <% if user.avatar.attached? %>
+                <%= image_tag user.avatar, class: "rounded-circle",style:"width:50px;height:50px", alt: user.username %>
+              <% else %>
+                <%= image_tag "default_avatar.png", size: "40x40", class: "rounded-circle" %>
+              <% end %>
+              <div>
+                <div class="fw-semibold"><%= user.username %></div>
+                <small class="text-muted">Tap to chat</small>
+              </div>
+            </a>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="col-md-8 d-flex flex-column p-0" id="chat-area">
+        <div class="p-3 border-bottom d-flex align-items-center" style="height: 56px;">
+          <h6 class="mb-0" id="chat-with">Select a user</h6>
+        </div>
+
+        <div id="messages" class="flex-grow-1 p-3" style="overflow-y: auto; background-color: #fdfdfd;">
+          <div class="text-muted text-center mt-5">No user selected</div>
+        </div>
+
+        <div class="border-top p-3">
+          <%= form_with url: "#", method: :post, id: "chat-form", local: true do |f| %>
+            <div class="input-group">
+              <%= f.text_field :message, placeholder: "Type a message...", class: "form-control", id: "message-input", disabled: true %>
+              <button class="btn btn-primary" type="submit" disabled id="send-btn">Send</button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div  class="text-center " style="margin: 80px;">
+    <h2>Welcome to the Home Page</h2>
+    <p>Please sign in to create a post.</p>
+    <%= image_tag "InstagramLogo2.png"  ,style:"width:120vh"%>
+  </div>
+<% end %>
+
+
