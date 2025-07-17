@@ -1,7 +1,9 @@
 class HomeController < ApplicationController
   def index
     @posts = Post.order(created_at: :desc)
-    @users = current_user.followers
+    if current_user
+      @users = current_user.followers
+    end
 
     respond_to do |format|
       format.html
