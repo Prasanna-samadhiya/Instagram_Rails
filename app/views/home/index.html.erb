@@ -153,20 +153,20 @@
 
           <!-- Post Image -->
           <section class="insta__post_photos">
-              <% if post.image&.attached? %>
-              <%= image_tag url_for(post.image), class: "insta__post_photo", alt: "post image" %>
+            <% if post.image&.attached? %>
+              <% if post.image.content_type.start_with?("video") %>
+                <video class="insta__post_photo" controls preload="metadata" style="width: 100%; border-radius: 10px;">
+                  <source src="<%= url_for(post.image) %>" type="<%= post.image.content_type %>">
+                  Your browser does not support the video tag.
+                </video>
               <% else %>
-              <img src="https://www.bing.com/th/id/OIP.tZq4FbHI-2VuBSGkHjfyfAHaHa?w=157&h=211&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2" class="insta__post_photo" alt="placeholder">
+                <%= image_tag url_for(post.image), class: "insta__post_photo", alt: "post image" %>
               <% end %>
+            <% else %>
+              <img src="https://www.bing.com/th/id/OIP.tZq4FbHI-2VuBSGkHjfyfAHaHa?w=157&h=211&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2" class="insta__post_photo" alt="placeholder">
+            <% end %>
           </section>
           
-
-          <!----------------->
-          <%#= turbo_stream_from "posts" %>
-          <%#= turbo_frame_tag "post_#{post.id}_likes" do %>
-            <%#= render partial: "posts/likes", locals: { post: post } %>
-          <%# end %>
-          <!-----------------> 
 
           <!-- Post Buttons -->
           <section class="insta__post_btns">
@@ -185,8 +185,8 @@
                     <% end %>
                   <% end %>  
                 <% end %>
-                <%= button_to like_posts_path(post), method: :post, class: "btn p-0 border-0 bg-transparent" do %>
-                    <i class="far fa-paper-plane fa-2x"></i>
+                <%= button_tag class: "btn p-0 border-0 bg-transparent share-post-btn",data: { post_id: post.id, post_image: (post.image.attached? ? url_for(post.image) : nil), post_description: post.description } do %>
+                  <i class="far fa-paper-plane fa-2x"></i>
                 <% end %>
                 <button class="btn p-0 border-0 bg-transparent toggle-comments-btn" data-bs-toggle="collapse" data-bs-target="#comments-<%= post.id %>">
                   <i class="far fa-comment fa-2x"></i>
@@ -218,17 +218,21 @@
           <!-- Comment Field -->
           
           <div class="collapse mt-2 " id="comments-<%= post.id %>">
-            <%= form_with url: create_comment_path(post),method: :post, local: true do |f| %>
-              <div class="input-group mt-3 mb-3">
-                <%= f.text_field :content, placeholder: "Add a new comment...", class: "form-control" %>
-                <%= f.submit nil, class: "btn btn-primary" do %>
-                  Comment
-                <% end %>
-              </div>
+            <%= turbo_frame_tag "new_comment_for_post_#{post.id}" do %>
+              <%= form_with url: create_comment_path(post),method: :post, data: { turbo_stream: true }, local: false do |f| %>
+                <div class="input-group mt-3 mb-3">
+                  <%= f.text_field :content, placeholder: "Add a new comment...", class: "form-control" %>
+                  <%= f.submit nil, class: "btn btn-primary" do %>
+                    Comment
+                  <% end %>
+                </div>
+              <% end %>
             <% end %>
-            <% post.comments.where(parent_id: nil).each do |comment| %>
-              <%= render partial: 'comment', locals: { comment: comment, depth: 0 } %>
-            <% end %>
+            <div id="comments_for_post_<%= post.id %>">
+              <% post.comments.where(parent_id: nil).each do |comment| %>
+                <%= render partial: 'comment', locals: { comment: comment, depth: 0 } %>
+              <% end %>
+            </div>
           </div>
           </div>
         </div>
@@ -237,7 +241,6 @@
 
     <div class="row chat-container" id="chat-container" style="height: 72vh; margin-right:10px; width:1000px; padding-bottom:20px;background: #fff; border-radius: 12px; overflow: auto; scrollbar-width: none;box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
   
-      <!-- Chat List -->
       <div class="col-md-4 border-end px-0 chat-sidebar" style="background-color: #fafafa;">
         <div class="p-3 border-bottom">
           <h5 class="fw-bold mb-0" style="color:black">Chats</h5>
@@ -259,7 +262,7 @@
         </div>
       </div>
 
-      <!-- Chat Window -->
+  
       <div class="col-md-8 d-flex flex-column p-0 chat-window" id="chat-area">
         <!-- Top Bar with User Image and Name -->
         <div class="p-3 border-bottom d-flex align-items-center" style="height: 56px;">
@@ -313,11 +316,57 @@
       return [user1, user2].sort().join("_");
     }
 
+    document.querySelectorAll(".share-post-btn").forEach(button => {
+      button.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        if (!selectedUserId) {
+          alert("Please select a user to send the post to.");
+          return;
+        }
+
+        const postId = this.dataset.postId;
+        const imageUrl = this.dataset.postImage;
+        const description = this.dataset.postDescription;
+
+        let postUrl = `/posts/${postId}`;
+        let messageContent = `<a href="${postUrl}" target="_blank" style="text-decoration: none;">`;
+
+        if (imageUrl) {
+          messageContent += `<img src="${imageUrl}" alt="Shared Post Image" style="width:200px; height:180px; border-radius:8px; margin-bottom:5px;">`;
+        }
+
+        if (description) {
+          messageContent += `<p style="margin:0; color:black; text-align:center">${description}</p>`;
+        }
+
+        messageContent += `</a>`;
+
+        const chatId = getChatId(currentUserId, selectedUserId);
+
+        db.collection("chats")
+          .doc(chatId)
+          .collection("messages")
+          .add({
+            senderId: currentUserId,
+            text: messageContent,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
+      });
+    });
+
     function renderMessage(data) {
       const div = document.createElement("div");
       const isMine = data.senderId === currentUserId;
       div.className = `my-2 ${isMine ? 'text-end' : 'text-start'}`;
-      div.innerHTML = `<div class="chat-bubble ${isMine ? 'mine' : 'theirs'}">${data.text}</div>`;
+      const bubble = document.createElement("div");
+      bubble.className = `chat-bubble ${isMine ? 'mine' : 'theirs'}`;
+      bubble.innerHTML = data.text; 
+
+      
+      
+
+      div.appendChild(bubble);
       messagesDiv.appendChild(div);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
@@ -328,10 +377,8 @@
       user.addEventListener("click", function (e) {
         e.preventDefault();
 
-        // Remove 'selected' class from all users
         chatUsers.forEach(u => u.classList.remove("selected"));
 
-        // Add 'selected' class to the clicked user
         this.classList.add("selected");
 
         selectedUserId = this.dataset.userId;
@@ -340,7 +387,6 @@
         chatWith.innerText = `Chatting with ${username}`;
         chatWith.style.color = "black";
 
-        // Update avatar
         const avatarUrl = this.dataset.avatar;
         if (avatarUrl && chatUserImg) {
           chatUserImg.src = avatarUrl;

@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
       maxFiles: 1,
       paramName: "file", 
       addRemoveLinks: true,
-      acceptedFiles: "image/*",
+      acceptedFiles: "image/*,video/*",
 
       success: function (file, response) {
         // Assign signed blob ID to the hidden field

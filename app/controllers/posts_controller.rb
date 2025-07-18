@@ -68,20 +68,25 @@ class PostsController < ApplicationController
   end
 
   def createcomment
-    content = params[:content]
-    parent_id = params[:parent_id]
-
-    comment = Comment.new(
+    @comment = Comment.new(
       user: current_user,
       post: @post,
-      content: content,
-      parent_id: parent_id
+      content: params[:content],
+      parent_id: params[:parent_id]
     )
 
-    if comment.save
-      redirect_back fallback_location: root_path, notice: "Comment added successfully"
+    if @comment.save
+      Rails.logger.debug ">>>>>> Format: #{request.format}"
+      puts "--------------------------------------------------------------------------------------------#{request.format}"
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_back fallback_location: root_path, notice: "Comment added successfully" }
+      end
     else
-      redirect_back fallback_location: root_path, alert: "Failed to add comment"
+      Rails.logger.debug ">>>>>> Format: #{request.format}"
+      respond_to do |format|
+        format.html { redirect_back fallback_location: root_path, alert: "Failed to add comment" }
+      end
     end
   end
 

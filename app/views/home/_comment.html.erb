@@ -37,9 +37,11 @@
     </div>
 
     <div class="collapse" id="replies-<%= comment.id %>">
+     <div class="ms-4" id="replies_for_comment_<%= comment.id %>">
       <% comment.replies.each do |reply| %>
         <%= render partial: 'comment', locals: { comment: reply, depth: depth + 1 } %>
       <% end %>
+     </div>
     </div>
 
   </div>

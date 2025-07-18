@@ -16,7 +16,6 @@
   </div>
 
   <div class="tab-content" id="myTabContent">
-    <!-- Followers Tab -->
     <div class="tab-pane fade show active" id="followers" role="tabpanel" aria-labelledby="followers-tab" tabindex="0">
       <% if @followers.any? %>
         <div class="container mt-4">
@@ -53,7 +52,6 @@
       <% end %>
     </div>
 
-    <!-- Followed Tab -->
     <div class="tab-pane fade" id="followed" role="tabpanel" aria-labelledby="followed-tab" tabindex="0">
       <% if @followees.any? %>
         <div class="container mt-4">

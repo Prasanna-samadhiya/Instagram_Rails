@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
       url: "/uploads",
       paramName: "file",
       maxFiles: 1,
-      acceptedFiles: "image/*",
+      acceptedFiles: "image/*,video/*",
       addRemoveLinks: true,
       headers: {
         "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content

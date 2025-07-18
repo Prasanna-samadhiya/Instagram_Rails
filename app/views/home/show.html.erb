@@ -1,9 +1,9 @@
 <h1 style="color:white;text-align:center;margin-bottom:10px">
    Liked Posts
 </h1>
-<div style="display:flex;flex-direction:row;gap:15px;width:100%;overflow-y:auto;scrollbar-width: none;">
+<div style="display:flex;flex-direction:row;gap:15px;width:100%;overflow-y:auto;scrollbar-width: none;margin-bottom:50px">
     <% current_user.likes.map(&:post).each do |post|%>
-        <div style="width:500px;height:530px;overflow-y:auto;scrollbar-width: none;">
+        <div style="width:400px;height:530px;overflow-y:auto;scrollbar-width: none;padding:15px">
             <div class="insta__container insta__post">
             <!-- Insta-post start -->
             <section class="insta__header insta__post_header">
@@ -20,7 +20,7 @@
                 </span>
 
                 <!-- follow/unfollow button -->
-                <div style="margin-left:200px;">  
+                <div style="margin-left:150px;">  
                 <% if current_user != post.user %>
                     <% if current_user.following?(post.user) %>
                     <%= button_to "Unfollow", unfollow_user_path(post.user), method: :post,class: "btn btn-outline-danger btn-sm" %>
@@ -34,7 +34,14 @@
             <!-- Post Image -->
             <section class="insta__post_photos">
                 <% if post.image&.attached? %>
-                <%= image_tag url_for(post.image), class: "insta__post_photo", alt: "post image" %>
+                <% if post.image.content_type.start_with?("video") %>
+                    <video class="insta__post_photo" controls preload="metadata" style="width: 100%; border-radius: 10px;">
+                    <source src="<%= url_for(post.image) %>" type="<%= post.image.content_type %>">
+                    Your browser does not support the video tag.
+                    </video>
+                <% else %>
+                    <%= image_tag url_for(post.image), class: "insta__post_photo", alt: "post image" %>
+                <% end %>
                 <% else %>
                 <img src="https://www.bing.com/th/id/OIP.tZq4FbHI-2VuBSGkHjfyfAHaHa?w=157&h=211&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2" class="insta__post_photo" alt="placeholder">
                 <% end %>
@@ -79,10 +86,8 @@
 
             <!-- Comment Field -->
             
-            <!-- Collapsible Comments Section -->
-            
             <div class="collapse mt-2 " id="comments-<%= post.id %>">
-            <!-- Add  Comment -->
+        
             <%= form_with url: create_comment_path(post),method: :post, local: true do |f| %>
                 <div class="input-group mt-3 mb-3">
                 <%= f.text_field :content, placeholder: "Add a new comment...", class: "form-control" %>
