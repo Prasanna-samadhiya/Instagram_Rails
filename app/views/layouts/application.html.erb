@@ -6,14 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-
-    <!-- Font Awesome CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <!-- Drop Zone CSS -->
     <link href="https://unpkg.com/dropzone@6.0.0-beta.2/dist/dropzone.css" rel="stylesheet" /> 
+    
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -33,7 +29,6 @@
     <nav class="navbar navbar-dark  sticky-top" style="background-color:lightcoral">
       <div class="container d-flex justify-content-between align-items-center">
 
-        <!-- Logo -->
         <a class="navbar-brand d-flex align-items-center gap-2" href="<%= root_path %>">
           <span class="fa-stack">
             <i class="fas fa-circle fa-stack-2x text-dark"></i>
@@ -42,17 +37,14 @@
           <span class="text-white">Instagram</span>
         </a>
 
-        <!-- Search Form -->
         <div class="m-auto" style="width:500px">
           <%= form_with url: search_path, method: :get, local: true, class: 'form-inline' do |form| %>
             <%= form.text_field :query, value: params[:query], class: 'form-control mr-sm-2', placeholder: '#search' %>
           <% end %>
         </div>
 
-        <!-- User Section -->
         <% if user_signed_in? %>
           <div class="d-flex align-items-center gap-3 text-white">
-
             <%= button_tag type: "button", class: "btn btn-link p-0 m-0 text-white open-post-modal", style: "text-decoration: none;" do %>
               <i class="fas fa-plus fa-xl"></i>
             <% end %>
@@ -132,41 +124,41 @@
       </nav>
     </footer>
 
-     <!-----modal start----->
-  <div id="post-modal" class="modal" style="display: none;">
-  <div class="modal-content">
-    <span class="close-btn" id="close-post-modal">&times;</span>
+    <!-----modal start----->
+    <div id="post-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close-btn" id="close-post-modal">&times;</span>
 
-    <h2>Create a New Post</h2>
+        <h2>Create a New Post</h2>
 
-    <%= form_for Post.new, html: { multipart: true, id: "post-upload-form" } do |f| %>
-      <div class="form-group mb-3">
-        <%= f.label :description, "Description", class: "form-label" %>
-        <%= f.text_field :description, class: "form-control", placeholder: "Write your post..." %>
+        <%= form_for Post.new, html: { multipart: true, id: "post-upload-form" } do |f| %>
+          <div class="form-group mb-3">
+            <%= f.label :description, "Description", class: "form-label" %>
+            <%= f.text_field :description, class: "form-control", placeholder: "Write your post..." %>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">Upload Image</label>
+            <div id="my-dropzone" class="dropzone"></div>
+
+            <!-- Fallback for non-JS users -->
+            <noscript>
+              <%= f.label :image, "Upload Image", class: "form-label" %>
+              <%= f.file_field :image, class: "form-control" %>
+            </noscript>
+          </div>
+
+          <% if current_user %>
+            <%= f.hidden_field :user_id, value: current_user.id %>
+          <% end %>
+
+          <div class="text-center mt-4">
+            <%= f.submit "Create Post", class: "btn btn-success px-4" %>
+          </div>
+        <% end %>
       </div>
-
-      <div class="form-group mb-3">
-        <label class="form-label">Upload Image</label>
-        <div id="my-dropzone" class="dropzone"></div>
-
-        <!-- Fallback for non-JS users -->
-        <noscript>
-          <%= f.label :image, "Upload Image", class: "form-label" %>
-          <%= f.file_field :image, class: "form-control" %>
-        </noscript>
-      </div>
-
-      <% if current_user %>
-        <%= f.hidden_field :user_id, value: current_user.id %>
-      <% end %>
-
-      <div class="text-center mt-4">
-        <%= f.submit "Create Post", class: "btn btn-success px-4" %>
-      </div>
-    <% end %>
-  </div>
-</div>
-  <!-----modal close----->
+    </div>
+    <!-----modal close----->
 
     
 
@@ -188,13 +180,11 @@
           openBtn.addEventListener("click", function (e) {
             e.preventDefault();
             modal.style.display = "block";
-
-            // Prevent re-initialization
             if (!dropzoneTarget.classList.contains("dz-initialized")) {
               dropzoneTarget.classList.add("dz-initialized");
 
               new Dropzone("#my-dropzone", {
-                url: "/uploads", // Replace this with your actual upload endpoint if separate
+                url: "/uploads", 
                 paramName: "post[image]",
                 maxFiles: 1,
                 acceptedFiles: "image/*",
@@ -205,14 +195,12 @@
           });
         }
 
-        // Close modal
         if (closeBtn) {
           closeBtn.addEventListener("click", function () {
             modal.style.display = "none";
           });
         }
 
-        // Close modal when clicking outside
         window.addEventListener("click", function (event) {
           if (event.target === modal) {
             modal.style.display = "none";
@@ -220,36 +208,23 @@
         });
       });
     </script>
-    <!-- Firebase App (the core Firebase SDK) -->
-    <!-- Firebase App (Core) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-
-    <!-- Firebase Auth (optional) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-
-    <!-- Firebase Firestore -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
     <script type="module">
-      // Import the functions you need from the SDKs you need
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-      // TODO: Add SDKs for Firebase products that you want to use
-      // https://firebase.google.com/docs/web/setup#available-libraries
-
-      // Your web app's Firebase configuration
+      
       const firebaseConfig = {
       };
 
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
-      // Chat functions
       const chatBox = document.getElementById("chat-box");
       const chatInput = document.getElementById("chat-input");
       const chatButton = document.getElementById("chat-send");
 
-      // Listen to messages
       const q = query(collection(db, "messages"), orderBy("timestamp"));
       onSnapshot(q, (snapshot) => {
         chatBox.innerHTML = "";
@@ -275,41 +250,33 @@
     <%= javascript_include_tag "dropzone_init", defer: true %>
     
     
-<!-- Firebase Core SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 
-<!-- Firebase Auth SDK (optional, for user auth if needed) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-<!-- Firestore SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-<!-- Initialize Firebase -->
-<script>
-  // Your Firebase configuration (Replace with your actual config values)
-  const firebaseConfig = {
-   
-  };
+    <script>
+      const firebaseConfig = {
+      };
 
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
+      firebase.initializeApp(firebaseConfig);
 
-  // Initialize Firestore
-  const db = firebase.firestore();
+      const db = firebase.firestore();
 
-    window.testFirebase = async function () {
-    try {
-      const docRef = await db.collection("test").add({
-        name: "Firebase check",
-        timestamp: new Date()
-      });
-      alert("✅ Firebase is working! Doc ID: " + docRef.id);
-    } catch (e) {
-      console.error("❌ Firebase error:", e);
-      alert("Firebase error: Check console for details");
-    }
-  };
-</script>
+        window.testFirebase = async function () {
+        try {
+          const docRef = await db.collection("test").add({
+            name: "Firebase check",
+            timestamp: new Date()
+          });
+          alert("Firebase is working! Doc ID: " + docRef.id);
+        } catch (e) {
+          console.error("Firebase error:", e);
+          alert("Firebase error: Check console for details");
+        }
+      };
+    </script>
 
 <button onclick="testFirebase()" style="padding:10px 20px; margin-top: 20px;">Test Firebase</button>
 
