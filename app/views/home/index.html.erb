@@ -14,6 +14,18 @@
     color: black;
   }
 
+  .chat-user.selected {
+    background-color: #e6e6e6 !important;
+    border-left: 4px solid #ee2a7b;
+  }
+
+  .chat-user:focus,
+  .chat-user:active,
+  .chat-user.active {
+    outline: none;
+    box-shadow: none;
+  }
+
   .card {
     background-color: white;
   }
@@ -59,6 +71,53 @@
   }
 </style>
 
+<style>
+  .chat-bubble {
+    max-width: 70%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    margin-bottom: 10px;
+    display: inline-block;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .chat-bubble.mine {
+    background-color: #ee2a7b;
+    color: white;
+    border-bottom-right-radius: 4px;
+    margin-left: auto;
+  }
+
+  .chat-bubble.theirs {
+    background-color: #f0f0f0;
+    color: black;
+    border-bottom-left-radius: 4px;
+    margin-right: auto;
+  }
+
+  .chat-message-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  .chat-message-row.theirs {
+    justify-content: flex-start;
+  }
+
+  .chat-message-row.mine {
+    justify-content: flex-end;
+  }
+
+  .chat-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+  }
+</style>
+
+
 
 <% if user_signed_in? %>
   <div style= "display:flex;flex-direction:row;justify-content:space-between; ">
@@ -100,19 +159,31 @@
               <img src="https://www.bing.com/th/id/OIP.tZq4FbHI-2VuBSGkHjfyfAHaHa?w=157&h=211&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2" class="insta__post_photo" alt="placeholder">
               <% end %>
           </section>
+          
+
+          <!----------------->
+          <%#= turbo_stream_from "posts" %>
+          <%#= turbo_frame_tag "post_#{post.id}_likes" do %>
+            <%#= render partial: "posts/likes", locals: { post: post } %>
+          <%# end %>
+          <!-----------------> 
 
           <!-- Post Buttons -->
           <section class="insta__post_btns">
               <div class="insta__post_btns-left">
               <div class="d-flex justify-content-between align-items-center px-3 py-2 gap-4" style="font-size: 1.4rem;">
                 <% if current_user.likes.exists?(post_id: post.id) %>
-                  <%= button_to dislike_posts_path(post), method: :post,style:"", class: "btn p-0 border-0 bg-transparent text-danger  " do %>
-                    <i class="fas fa-heart fa-2x"></i> 
+                  <%= turbo_frame_tag "post_#{post.id}_likes" do %>
+                    <%= button_to dislike_posts_path(post), method: :post,style:"", class: "btn p-0 border-0 bg-transparent text-danger",data: { turbo: "replace" }  do %>
+                      <i class="fas fa-heart fa-2x"></i> 
+                    <% end %>
                   <% end %>
                 <% else %>
-                  <%= button_to like_posts_path(post), method: :post, class: "btn p-0 border-0 bg-transparent" do %>
-                    <i class="far fa-heart fa-2x"></i> 
-                  <% end %>
+                  <%= turbo_frame_tag "post_#{post.id}_likes" do %>
+                    <%= button_to like_posts_path(post), method: :post, class: "btn p-0 border-0 bg-transparent", data: { turbo: "replace" } do %>
+                      <i class="far fa-heart fa-2x"></i> 
+                    <% end %>
+                  <% end %>  
                 <% end %>
                 <%= button_to like_posts_path(post), method: :post, class: "btn p-0 border-0 bg-transparent" do %>
                     <i class="far fa-paper-plane fa-2x"></i>
@@ -125,17 +196,23 @@
 
           <!-- Post Comments -->
           <section class="insta__post_comm insta__post_comm_aut">
-              <span class="insta__post_text-bold"><%= post.likes.count %> liked and <%= post.comments.select { |c| c.parent_id.nil? }.count%> commented on this post</span>
+            <%= turbo_frame_tag "post_#{post.id}_likes" do %>
+              <span class="insta__post_text-bold" data-turbo-frame>
+                <%= post.likes.count %> liked and <%= post.comments.select { |c| c.parent_id.nil? }.count%> commented on this post
+              </span>
               <div class="insta__post_comm_author">
-              <span class="insta__post_text-bold"><%= post.user.name %></span>
-              <% post.description.to_s.split(' ').each do |word| %>
-                <% if word.start_with?('#') %>
-                  <%= link_to word, search_path(query: word) %>
-                <% else %>
-                  <%= word %>
+                <span class="insta__post_text-bold">
+                  <%= post.user.name %>
+                </span>
+                <% post.description.to_s.split(' ').each do |word| %>
+                  <% if word.start_with?('#') %>
+                    <%= link_to word, search_path(query: word) %>
+                  <% else %>
+                    <%= word %>
+                  <% end %>
                 <% end %>
-              <% end %>
               </div>
+            <% end %>
           </section>
 
           <!-- Comment Field -->
@@ -158,20 +235,21 @@
       <% end %>
     </div>
 
-    <div class="row " style="height: 72vh; margin-right:10px; width:1000px; padding-bottom:20px;background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-      
-      <div class="col-md-4 border-end px-0" style="background-color: #fafafa;">
+    <div class="row chat-container" id="chat-container" style="height: 72vh; margin-right:10px; width:1000px; padding-bottom:20px;background: #fff; border-radius: 12px; overflow: auto; scrollbar-width: none;box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+  
+      <!-- Chat List -->
+      <div class="col-md-4 border-end px-0 chat-sidebar" style="background-color: #fafafa;">
         <div class="p-3 border-bottom">
           <h5 class="fw-bold mb-0" style="color:black">Chats</h5>
         </div>
-        <div class="list-group list-group-flush" style="height: calc(100% - 56px); overflow-y: auto;">
+        <div class="list-group list-group-flush chat-user-list" style="height: calc(100% - 56px); overflow-y: auto;">
           <% @users.each do |user| %>
-            <a href="#" class="list-group-item list-group-item-action d-flex align-items-center gap-3 px-3 py-2 chat-user" data-user-id="<%= user.id %>">
-              <% if user.avatar.attached? %>
-                <%= image_tag user.avatar, class: "rounded-circle",style:"width:50px;height:50px", alt: user.username %>
-              <% else %>
-                <%= image_tag "default_avatar.png", size: "40x40", class: "rounded-circle" %>
-              <% end %>
+            <a href="#" 
+              class="list-group-item list-group-item-action d-flex align-items-center gap-3 px-3 py-2 chat-user" 
+              data-user-id="<%= user.id %>" 
+              data-username="<%= user.username %>" 
+              data-avatar="<%= user.avatar.attached? ? url_for(user.avatar) : asset_path('image.png') %>">
+              <%= image_tag user.avatar.attached? ? user.avatar : "image.png", class: "rounded-circle", style: "width:50px;height:50px;" %>
               <div>
                 <div class="fw-semibold"><%= user.username %></div>
                 <small class="text-muted">Tap to chat</small>
@@ -181,16 +259,21 @@
         </div>
       </div>
 
-      <div class="col-md-8 d-flex flex-column p-0" id="chat-area">
+      <!-- Chat Window -->
+      <div class="col-md-8 d-flex flex-column p-0 chat-window" id="chat-area">
+        <!-- Top Bar with User Image and Name -->
         <div class="p-3 border-bottom d-flex align-items-center" style="height: 56px;">
+          <img id="chat-user-img" src="" alt="User Image" class="rounded-circle me-2" width="40" height="40" style="display: none;">
           <h6 class="mb-0" id="chat-with">Select a user</h6>
         </div>
 
-        <div id="messages" class="flex-grow-1 p-3" style="overflow-y: auto; background-color: #fdfdfd;">
+        <!-- Messages Area -->
+        <div id="messages" class="flex-grow-1 p-3 chat-messages" style="overflow-y: auto; background-color: #fdfdfd;">
           <div class="text-muted text-center mt-5">No user selected</div>
         </div>
 
-        <div class="border-top p-3">
+        <!-- Chat Input -->
+        <div class="border-top p-3 chat-input-area">
           <%= form_with url: "#", method: :post, id: "chat-form", local: true do |f| %>
             <div class="input-group">
               <%= f.text_field :message, placeholder: "Type a message...", class: "form-control", id: "message-input", disabled: true %>
@@ -199,7 +282,10 @@
           <% end %>
         </div>
       </div>
+
     </div>
+
+
   </div>
 <% else %>
   <div  class="text-center " style="margin: 80px;">
@@ -210,3 +296,95 @@
 <% end %>
 
 
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const chatUsers = document.querySelectorAll(".chat-user");
+    const chatWith = document.getElementById("chat-with");
+    const messageInput = document.getElementById("message-input");
+    const sendBtn = document.getElementById("send-btn");
+    const chatForm = document.getElementById("chat-form");
+    const messagesDiv = document.getElementById("messages");
+    
+    const currentUserId = "<%= current_user ? current_user.id : 0 %>";
+    let selectedUserId = null;
+    let unsubscribe = null; 
+
+    function getChatId(user1, user2) {
+      return [user1, user2].sort().join("_");
+    }
+
+    function renderMessage(data) {
+      const div = document.createElement("div");
+      const isMine = data.senderId === currentUserId;
+      div.className = `my-2 ${isMine ? 'text-end' : 'text-start'}`;
+      div.innerHTML = `<div class="chat-bubble ${isMine ? 'mine' : 'theirs'}">${data.text}</div>`;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    const chatUserImg = document.getElementById("chat-user-img");
+
+    chatUsers.forEach(user => {
+      user.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        // Remove 'selected' class from all users
+        chatUsers.forEach(u => u.classList.remove("selected"));
+
+        // Add 'selected' class to the clicked user
+        this.classList.add("selected");
+
+        selectedUserId = this.dataset.userId;
+        const username = this.querySelector(".fw-semibold").innerText;
+
+        chatWith.innerText = `Chatting with ${username}`;
+        chatWith.style.color = "black";
+
+        // Update avatar
+        const avatarUrl = this.dataset.avatar;
+        if (avatarUrl && chatUserImg) {
+          chatUserImg.src = avatarUrl;
+          chatUserImg.style.display = "inline-block";
+        }
+
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+        messagesDiv.innerHTML = "";
+
+        if (unsubscribe) unsubscribe();
+
+        const chatId = getChatId(currentUserId, selectedUserId);
+
+        unsubscribe = db
+          .collection("chats")
+          .doc(chatId)
+          .collection("messages")
+          .orderBy("timestamp")
+          .onSnapshot(snapshot => {
+            messagesDiv.innerHTML = "";
+            snapshot.forEach(doc => renderMessage(doc.data()));
+          });
+      });
+    });
+
+    chatForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const text = messageInput.value.trim();
+      if (!text || !selectedUserId) return;
+
+      const chatId = getChatId(currentUserId, selectedUserId);
+
+      db.collection("chats")
+        .doc(chatId)
+        .collection("messages")
+        .add({
+          senderId: currentUserId,
+          text: text,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+      messageInput.value = "";
+    });
+  });
+</script>

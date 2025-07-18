@@ -24,6 +24,7 @@
     <link rel="apple-touch-icon" href="/icon.png">
 
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
   </head>
 
   <body style="background-image: linear-gradient(358deg, #f9ce34, #ee2a7b, #6228d7)">
@@ -219,7 +220,105 @@
         });
       });
     </script>
+    <!-- Firebase App (the core Firebase SDK) -->
+    <!-- Firebase App (Core) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+
+    <!-- Firebase Auth (optional) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      // Chat functions
+      const chatBox = document.getElementById("chat-box");
+      const chatInput = document.getElementById("chat-input");
+      const chatButton = document.getElementById("chat-send");
+
+      // Listen to messages
+      const q = query(collection(db, "messages"), orderBy("timestamp"));
+      onSnapshot(q, (snapshot) => {
+        chatBox.innerHTML = "";
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          chatBox.innerHTML += `<div><strong>${data.name}</strong>: ${data.text}</div>`;
+        });
+      });
+
+      chatButton.addEventListener("click", async () => {
+        if (chatInput.value.trim() !== "") {
+          await addDoc(collection(db, "messages"), {
+            name: "You",
+            text: chatInput.value,
+            timestamp: new Date()
+          });
+          chatInput.value = "";
+        }
+      });
+      prompt("Firebase version:", firebase?.SDK_VERSION || "Firebase not loaded");
+
+    </script>
     <%= javascript_include_tag "dropzone_init", defer: true %>
     
+    
+<!-- Firebase Core SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+
+<!-- Firebase Auth SDK (optional, for user auth if needed) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+<!-- Firestore SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<!-- Initialize Firebase -->
+<script>
+  // Your Firebase configuration (Replace with your actual config values)
+  const firebaseConfig = {
+    apiKey: "AIzaSyAi_jl7C1PDYDOpAImXXUVnUat5FEO-Ty0",
+    authDomain: "instagramrails-f6ece.firebaseapp.com",
+    projectId: "instagramrails-f6ece",
+    storageBucket: "instagramrails-f6ece.firebasestorage.app",
+    messagingSenderId: "1086086753266",
+    appId: "1:1086086753266:web:92643bb306a9de5348596b"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  // Initialize Firestore
+  const db = firebase.firestore();
+
+    window.testFirebase = async function () {
+    try {
+      const docRef = await db.collection("test").add({
+        name: "Firebase check",
+        timestamp: new Date()
+      });
+      alert("✅ Firebase is working! Doc ID: " + docRef.id);
+    } catch (e) {
+      console.error("❌ Firebase error:", e);
+      alert("Firebase error: Check console for details");
+    }
+  };
+</script>
+
+<button onclick="testFirebase()" style="padding:10px 20px; margin-top: 20px;">Test Firebase</button>
+
+  
   </body>
 </html>

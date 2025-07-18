@@ -1,0 +1,11 @@
+
+  <div>
+     hi
+    <span><%= post.likes.count %> liked and <%= post.comments.count %> commented on this post</span>
+
+    <% if current_user.likes.exists?(post_id: post.id) %>
+      <%= button_to "dislike",dislike_posts_path(post), method: :post, class: "btn p-0 border-0 bg-transparent text-danger", data: { turbo: true } %>
+    <% else %>
+      <%= button_to "like",like_posts_path(post), method: :post, class: "btn p-0 border-0 bg-transparent", data: { turbo: true } %>
+    <% end %>
+  </div> 

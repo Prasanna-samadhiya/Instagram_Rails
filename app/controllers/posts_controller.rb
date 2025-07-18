@@ -27,6 +27,16 @@ class PostsController < ApplicationController
       end
   end
 
+  def update_time
+    @posts = Post.all
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace("posts_list", partial: "posts/posts", locals: { posts: @posts })
+      end
+      format.html { redirect_to posts_path } # fallback
+    end
+  end
 
   def destroy
     @post = current_user.posts.find(params[:id])
@@ -38,7 +48,10 @@ class PostsController < ApplicationController
     like = Like.new(user: current_user, post: @post)
 
     if like.save
-      redirect_back fallback_location: root_path
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_back fallback_location: root_path }
+      end
     else
       flash[:alert] = "Your like did not work"
       redirect_back fallback_location: root_path
@@ -46,10 +59,12 @@ class PostsController < ApplicationController
   end
 
   def dislike
-    like = current_user.likes.find_by(post: @post)
-    like&.destroy
+    current_user.likes.find_by(post: @post)&.destroy
 
-    redirect_back fallback_location: root_path
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_back fallback_location: root_path }
+    end
   end
 
   def createcomment

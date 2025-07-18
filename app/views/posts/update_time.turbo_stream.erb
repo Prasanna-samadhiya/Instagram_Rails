@@ -1,0 +1,5 @@
+<%= turbo_stream.replace "turbo-test" do %>
+  <div id="turbo-test">
+    <p>This is Turbo test block - <%= Time.current.strftime("%H:%M:%S") %></p>
+  </div>
+<% end %>

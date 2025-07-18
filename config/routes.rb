@@ -21,7 +21,8 @@ Rails.application.routes.draw do
     # nested rote for the follows to have the user id
     get "follows", to: "follows#index"
   end
-  resources :posts, only: [ :new, :create, :show, :destroy ] do
+  resources :posts, only: [ :new, :create, :show, :destroy, :index ] do
+    post :update_time, on: :collection
     resources :comments, only: [ :create ] do
       post "reply", on: :member  # POST /comments/:id/reply
     end

@@ -1,1 +1,8 @@
 <%#u.likes.map(&:post)%>
+<div id="turbo-test">
+  <p>This is Turbo test block - <%= Time.current.strftime("%H:%M:%S") %></p>
+</div>
+
+<%= form_with url: update_time_posts_path, method: :post, data: { turbo_stream: true } do %>
+  <%= submit_tag "Update Time" %>
+<% end %>
