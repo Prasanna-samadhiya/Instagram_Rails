@@ -6,6 +6,8 @@ gem "rails", "~> 8.0.2"
 gem "propshaft"
 # Use sqlite3 as the database for Active Record
 gem "pg"
+# for managing secrets
+gem "dotenv"
 # Use devise for authentication
 gem "devise"
 # for debugging

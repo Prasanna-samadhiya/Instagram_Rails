@@ -377,6 +377,7 @@ DEPENDENCIES
   capybara
   debug
   devise
+  dotenv
   hotwire-rails
   importmap-rails
   jbuilder

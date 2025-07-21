@@ -216,6 +216,12 @@
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
       
       const firebaseConfig = {
+        apiKey: ENV["APIKEY"],
+        authDomain: ENV["AUTHDOMAIN"],
+        projectId: ENV["PROJECTID"],
+        storageBucket: ENV["STOAGEBUCKET"],
+        messagingSenderId: ENV["MESSAGESENDERID"],
+        appId: ENV["APPID"]
       };
 
       const app = initializeApp(firebaseConfig);
@@ -258,6 +264,12 @@
 
     <script>
       const firebaseConfig = {
+        apiKey: ENV["APIKEY"],
+        authDomain: ENV["AUTHDOMAIN"],
+        projectId: ENV["PROJECTID"],
+        storageBucket: ENV["STOAGEBUCKET"],
+        messagingSenderId: ENV["MESSAGESENDERID"],
+        appId: ENV["APPID"]
       };
 
       firebase.initializeApp(firebaseConfig);
