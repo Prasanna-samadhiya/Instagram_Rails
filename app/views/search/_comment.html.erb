@@ -5,7 +5,7 @@
   <div class="card-body" style="<%= depth.zero? ? '' : 'padding: 0.5rem 0;' %>">
 
     <div class="d-flex align-items-center mb-2">
-      <%= image_tag(comment.user.avatar.attached? ? url_for(comment.user.avatar) : 'default-avatar.png', class: "rounded-circle me-2", size: "40x40") %>
+      <%= image_tag(comment.user.avatar.attached? ? url_for(comment.user.avatar) : 'image.png', class: "rounded-circle me-2", size: "40x40") %>
       <div>
         <strong><%= comment.user.name %></strong><br>
         <small class="text-muted"><%= time_ago_in_words(comment.created_at) %> ago</small>
