@@ -1,13 +1,16 @@
 services:
   - type: web
-    name: Instagram_Rails
+    name: instagram-rails
     env: ruby
     plan: free
     buildCommand: bundle install
     startCommand: bundle exec rails server
     migrationsCommand: bundle exec rails db:migrate
     envVars:
+      - key: RAILS_MASTER_KEY
+        value: 12f1b27995a2943a758bf05c395aa1a2
       - key: postgresql://intagram1_user:NsO2ZIQLKBZa9pjdLeP3XFFCHmWyrh7q@dpg-d1v4eiidbo4c73f646tg-a/intagram1
         fromDatabase:
           name: instagram_db
           property: postgresql://intagram1_user:NsO2ZIQLKBZa9pjdLeP3XFFCHmWyrh7q@dpg-d1v4eiidbo4c73f646tg-a/intagram1
+
