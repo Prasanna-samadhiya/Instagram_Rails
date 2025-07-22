@@ -115,13 +115,20 @@
     height: 32px;
     border-radius: 50%;
   }
+  
+  @media (max-width: 768px) {
+    #chat-container {
+      width: 360px !important;
+      margin: 1px !important;
+    }
+  }
 </style>
 
 
 
 <% if user_signed_in? %>
-  <div style= "display:flex;flex-direction:row;justify-content:space-between; ">
-    <div style = "height:550px;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width: none;gap:20px;margin-bottom:50px;margin-left:100px ">
+  <div class="d-flex flex-column flex-md-row justify-content-between">
+    <div class="d-flex flex-column overflow-auto gap-3 mb-5 ms-2 ms-md-5" style="height:550px; scrollbar-width: none;">
       <% @posts.each do |post| %>
         <div style="width:340px">
           <div class="insta__container insta__post">
